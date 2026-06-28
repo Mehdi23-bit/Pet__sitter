@@ -1,6 +1,7 @@
 from rest_framework import generics, permissions
 from django.contrib.auth import get_user_model
-from .serializers import RegisterSerializer, UserSerializer, VerifyOTPSerializer, SendOTPSerializer , ForgotPasswordSerializer , ResetPasswordSerializer
+from .serializers import RegisterSerializer, UserSerializer, VerifyOTPSerializer, SendOTPSerializer , ForgotPasswordSerializer , ResetPasswordSerializer, ModifyPasswordSerializer
+
 from  .tools import generate_otp
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -115,10 +116,32 @@ class ResetPasswordView(APIView):
         
         try:
             user = User.objects.get(email=email)
+            user.set_password(password)
+            user.save()
+            return Response({'message': 'password modified successfuly'}, status=200) 
         except User.DoesNotExist:
             return Response({'error': ' =User not found.'}, status=404)
         
-        user.set_password(password)
-        user.save()
-        return Response({'message': 'password modified successfuly'}, status=200)    
+           
+    
+    
+class ModifyPasswordView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def post(self,request):
+        serializer = ModifyPasswordSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data['email']
+        old_password = serializer.validated_data['old_password']
+        new_password = serializer.validated_data['new_password']
+        
+        try:
+            user = User.objects.get(email=email)
+            if not user.check_password(old_password):
+                return Response({'error' : 'old password is not correct '}, status=400)
+            user.set_password(new_password)
+            user.save()
+            return Response({'message': 'password modified successfuly'}, status=200)
+        except User.DoesNotExist:
+            return Response({'error': ' =User not found.'}, status=404)
     
