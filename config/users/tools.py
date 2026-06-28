@@ -2,7 +2,7 @@ import random
 from django.core.cache import cache
 from django.core.mail import send_mail
 from django.conf import settings
-
+import secrets
 
 def generate_otp(email):
     otp = str(random.randint(100000, 999999))
@@ -31,3 +31,27 @@ def delete_otp(email):
     
 def check_otp(email):
     return cache.get(f"otp:{email}") 
+
+
+
+def generate_reset_token(email):
+    token = secrets.token_urlsafe(128)
+    cache.set(f"reset_token:{email}", token, timeout=settings.TOKEN_EXPIRY_SECONDS )
+    send_mail(
+        subject="Your Reset Link",
+        message=f"Your Reset Link is: {settings.FRONTEND_URL}/reset-password?token={token}\nExpires in 5 minutes.",
+        from_email=settings.EMAIL_HOST_USER,
+        recipient_list=[email],
+    )
+    return token
+
+def verify_reset_token(email,token):
+    cached_token = cache.get(f"reset_token{email}")
+    if cached_token is None:
+        return None, "Token expired."
+    if cached_token != token:
+        return None, "Invalid Token."
+    return True, "Verified Token"
+
+def delete_reset_token(email):
+    cache.delete(f"reset_token:{email}")

@@ -169,3 +169,11 @@ EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 #otp expiracy 
 
 OTP_EXPIRY_SECONDS = 300
+
+#reset token expiracy 
+
+TOKEN_EXPIRY_SECONDS = 1800
+
+# frontend url 
+
+FRONTEND_URL = "http://example.com"
