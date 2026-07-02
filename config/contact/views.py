@@ -1,7 +1,7 @@
 from rest_framework import viewsets
 from rest_framework.views import APIView
-from .models import ContactRequest
-from .serializers import ContactRequestSerializer, TreatingRequestSerializer
+from .models import ContactRequest, Message  
+from .serializers import ContactRequestSerializer, TreatingRequestSerializer , MessageSerializer
 from rest_framework import permissions
 from rest_framework.response import Response 
 
@@ -35,6 +35,18 @@ class ContactRequestHandlingView(APIView)
         contact_request.status = status
         contact_request.save()
         return Response({"message": "request status changed successfuly"}, status=200)
+
+
+class MessageView(viewsets.ModelViewSet):
+    serializer_class = MessageSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        request_id = self.kwargs["request_id"]
+        return Message.objects.filter(request_id=request_id)
+    def perform_create(self,serializer):
+        request_id = self.kwargs["request_id"]
+        serializer.save(sender=self.request.user,request_id=request_id)
 
 
 
