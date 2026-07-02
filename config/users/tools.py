@@ -46,7 +46,7 @@ def generate_reset_token(email):
     return token
 
 def verify_reset_token(email,token):
-    cached_token = cache.get(f"reset_token{email}")
+    cached_token = cache.get(f"reset_token:{email}")
     if cached_token is None:
         return None, "Token expired."
     if cached_token != token:

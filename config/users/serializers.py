@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-
+from .models import PetOwnerProfile, PetSitterProfile
 User = get_user_model()
 
 
@@ -10,6 +10,7 @@ class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'email', 'username', 'password', 'role', 'phone', 'city']
+
 
     def create(self, validated_data):
         password = validated_data.pop('password')
@@ -43,7 +44,7 @@ class ForgotPasswordSerializer(serializers.Serializer):
 
 class ResetPasswordSerializer(serializers.Serializer):
     email = serializers.EmailField()
-    token = serializers.CharField(max_length=128,min_length=128)
+    token = serializers.CharField(min_length=128)
     password = serializers.CharField(min_length=8, write_only=True)   
     
     
@@ -51,3 +52,20 @@ class ResetPasswordSerializer(serializers.Serializer):
 class ModifyPasswordSerializer(serializers.Serializer):
     old_password=serializers.CharField(min_length=8)
     new_password=serializers.CharField(min_length=8)         
+    
+    
+    
+class PetOwnerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PetOwnerProfile
+        fields = ['user','address']
+        read_only_fields = ['user']
+        
+        
+class PetSitterSerializer(serializers.ModelSerializer):
+    cin = serializers.CharField(write_only=True)
+    class Meta:
+        model = PetSitterProfile
+        fields = '__all__'
+        read_only_fields = ['user']
+        

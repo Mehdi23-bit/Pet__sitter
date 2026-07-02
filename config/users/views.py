@@ -1,6 +1,6 @@
 from rest_framework import generics, permissions
 from django.contrib.auth import get_user_model
-from .serializers import RegisterSerializer, UserSerializer, VerifyOTPSerializer, SendOTPSerializer , ForgotPasswordSerializer , ResetPasswordSerializer, ModifyPasswordSerializer
+from .serializers import RegisterSerializer, UserSerializer, VerifyOTPSerializer, SendOTPSerializer , ForgotPasswordSerializer , ResetPasswordSerializer, ModifyPasswordSerializer, PetOwnerSerializer
 
 from  .tools import generate_otp
 from rest_framework.views import APIView
@@ -145,3 +145,13 @@ class ModifyPasswordView(APIView):
         except User.DoesNotExist:
             return Response({'error': ' =User not found.'}, status=404)
     
+    
+    
+    
+    
+class MePetOwnerView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = PetOwnerSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_object(self):
+        return self.request.user.owner_profile    
