@@ -11,5 +11,9 @@ urlpatterns = [
         'put': 'update',
         'patch': 'partial_update',
         'delete': 'destroy',
-    }), name='contact_detail')
+    }), name='contact_detail'),
+
+   path('change_status/', ContactRequestHandlingView.as_view(), name="change_status"),
+
+
 ]
