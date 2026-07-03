@@ -8,6 +8,7 @@ class ContactRequest(models.Model):
         PENDING  = 'pending',  'Pending'
         ACCEPTED = 'accepted', 'Accepted'
         REJECTED = 'rejected', 'Rejected'
+        FINISHED = 'finished', 'Finished'
 
     owner      = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='sent_requests')
     sitter     = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='received_requests')
@@ -30,4 +31,14 @@ class Message(models.Model):
 
     def __str__(self):
         return f"{self.sender.email}: {self.content[:50]}"
-# Create your models here.
+# Create your models here
+#
+#
+class Review(models.Model):
+    request    = models.OneToOneField(ContactRequest, on_delete=models.CASCADE, related_name='review')
+    rating     = models.PositiveSmallIntegerField()
+    comment    = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Review for {self.request.sitter.email} — {self.rating}/5"

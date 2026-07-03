@@ -1,5 +1,5 @@
 from django.urls import path 
-from .views import ContactRequestView
+from .views import ContactRequestView, MessageView , ReviewView, ContactRequestHandlingView
 
 urlpatterns = [
     path('', ContactRequestView.as_view({
@@ -14,6 +14,9 @@ urlpatterns = [
     }), name='contact_detail'),
 
    path('change_status/', ContactRequestHandlingView.as_view(), name="change_status"),
+   path('message/<int:request_id>/' , MessageView.as_view({'get': 'list'
+                                                           ,'post': 'create'}), name="message"),
+   path('review/<int:request_id>/', ReviewView.as_view({'get': 'list','post': 'create'}))
 
 
 ]

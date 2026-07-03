@@ -14,9 +14,11 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         password = validated_data.pop('password')
+        cin = validated_data.pop('cin',None)
         user = User(**validated_data)
         user.set_password(password)
         user.is_active = False
+        user._cin =  cin
         user.save()
         return user
 

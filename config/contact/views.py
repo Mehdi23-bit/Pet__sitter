@@ -1,10 +1,10 @@
 from rest_framework import viewsets
 from rest_framework.views import APIView
-from .models import ContactRequest, Message  
-from .serializers import ContactRequestSerializer, TreatingRequestSerializer , MessageSerializer
+from .models import ContactRequest, Message, Review  
+from .serializers import ContactRequestSerializer, TreatingRequestSerializer , MessageSerializer, ReviewSerializer
 from rest_framework import permissions
 from rest_framework.response import Response 
-
+from rest_framework.exceptions import PermissionDenied ,NotFound
 class ContactRequestView(viewsets.ModelViewSet):
     serializer_class = ContactRequestSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -19,7 +19,7 @@ class ContactRequestView(viewsets.ModelViewSet):
         serializer.save(owner=self.request.user)
 
 
-class ContactRequestHandlingView(APIView)
+class ContactRequestHandlingView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
@@ -43,10 +43,39 @@ class MessageView(viewsets.ModelViewSet):
 
     def get_queryset(self):
         request_id = self.kwargs["request_id"]
+        user = self.request.user 
+        try:
+            request_contact = ContactRequest.objects.get(pk=request_id)
+        except ContactRequest.DoesNotExist:
+            raise NotFound("the message is not accessible")    
+        if request_contact.owner != user and request_contact.sitter != user:
+            raise PermissionDenied("the message is not accessible ")
+
         return Message.objects.filter(request_id=request_id)
+    
     def perform_create(self,serializer):
         request_id = self.kwargs["request_id"]
         serializer.save(sender=self.request.user,request_id=request_id)
 
 
+class ReviewView(viewsets.ModelViewSet):                                
+    serializer_class = ReviewSerializer                                 
+    permission_classes = [permissions.IsAuthenticated]                   
+                                                                         
+    def get_queryset(self):                                              
+        request_id = self.kwargs["request_id"]                           
+        return Review.objects.filter(request_id=request_id)             
+    def perform_create(self,serializer):                                 
+        request_id = self.kwargs["request_id"]
+        try:
+            request_contact = ContactRequest.objects.get(pk=request_id,owner=self.request.user)
+        except ContactRequest.DoesNotExist:   
+            raise PermissionDenied("The request is not your")
+        
+        if request_contact.status !="finished":
+            raise PermissionDenied("you can rate only finished tasks")
+        
+        serializer.save(request_id=request_id)
+
+                                                                         
 

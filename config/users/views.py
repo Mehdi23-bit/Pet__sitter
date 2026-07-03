@@ -155,3 +155,36 @@ class MePetOwnerView(generics.RetrieveUpdateDestroyAPIView):
 
     def get_object(self):
         return self.request.user.owner_profile    
+    
+    
+    
+    
+class SitterListView(generics.ListAPIView):
+    serializer_class = UserSerializer
+    permission_classes = [permissions.AllowAny]
+
+    def get_queryset(self):
+        qs = User.objects.filter(role='sitter').select_related('sitter_profile')
+
+        city = self.request.query_params.get('city')
+        species = self.request.query_params.get('species')
+        max_price = self.request.query_params.get('max_price')
+
+        if city:
+            qs = qs.filter(city__iexact=city)
+
+        if species == 'dog':
+            qs = qs.filter(sitter_profile__accepts_dogs=True)
+        elif species == 'cat':
+            qs = qs.filter(sitter_profile__accepts_cats=True)
+        elif species == 'other':
+            qs = qs.filter(sitter_profile__accepts_other=True)
+
+        if max_price:
+            qs = qs.filter(sitter_profile__price_per_day__lte=max_price)
+
+        return qs.order_by(
+            '-sitter_profile__is_premium',
+            '-sitter_profile__cin_verified',
+            '-sitter_profile__rating',
+        )

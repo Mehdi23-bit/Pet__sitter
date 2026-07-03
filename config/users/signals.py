@@ -13,4 +13,5 @@ def create_profile(sender, instance, created, **kwargs):
     if instance.role == 'owner':
         PetOwnerProfile.objects.create(user=instance)
     elif instance.role == 'sitter':
-        PetSitterProfile.objects.create(user=instance, cin='PENDING')
+        cin = getattr(instance,'cin','')
+        PetSitterProfile.objects.create(user=instance, cin=cin)

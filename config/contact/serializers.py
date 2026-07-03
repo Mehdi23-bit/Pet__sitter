@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import ContactRequest, Message 
+from .models import ContactRequest, Message , Review
 
 
 
@@ -11,15 +11,22 @@ class ContactRequestSerializer(serializers.ModelSerializer):
         
 
 
-class TreatingRequestSerializer(serializers.Serializer)
+class TreatingRequestSerializer(serializers.Serializer):
     request_id = serializers.IntegerField()
-    status = serializers.choiceField(choices=['rejected','accepted'])
+    status = serializers.ChoiceField(choices=['rejected','accepted','finished'])
 
 
 
-class MessageSerializer(serializers.ModelSerializer)
+class MessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Message
         fields = '__all__'
         read_only_fields = ['sender','request','created_at']
 
+
+
+class ReviewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Review
+        fields = '__all__'
+        read_only_fields = ['created_at','request']
