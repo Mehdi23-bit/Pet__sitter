@@ -2,47 +2,52 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 
 
-class User(AbstractUser):
-    class Role(models.TextChoices):
-        OWNER  = 'owner', 'Pet Owner'
-        SITTER = 'sitter', 'Pet Sitter'
-        ADMIN  = 'admin', 'Admin'
- 
-    email                    = models.EmailField(unique=True)
-    phone                    = models.CharField(max_length=20, blank=True)
-    role                     = models.CharField(max_length=10, choices=Role.choices)
-    avatar                   = models.ImageField(upload_to='avatars/', blank=True,null=True)
-    city                     = models.CharField(max_length=100, blank=True)
-    verified                 = models.BooleanField(default=False)
-    completed_bookings_count = models.PositiveIntegerField(default=0)
-    review_count             = models.PositiveIntegerField(default=0) 
+class User(AbstractUser): 
+    """  
+        User Model : main model used to in login ,
+        inherite from the Model AbstractUser ,
+        we used email as username.
+        
+    """    
+    email  = models.EmailField(unique=True)
+    avatar = models.ImageField(upload_to='avatars/', blank=True,null=True)
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username','role']
 
     def __str__(self):
         return f"User({self.email},{self.role})" 
 
-class PetOwnerProfile(models.Model):
-    user    = models.OneToOneField(User, on_delete=models.CASCADE, related_name='owner_profile')
-    address = models.TextField(blank=True)
+
+
+class SitterProfile(models.Model):
+    """ 
+   SitterProfile Model : model responsible for the sitters ,
+   it has a relationship of OneToOne with User Model.
+   
+    """
+    user                     = models.OneToOneField(User, on_delete=models.CASCADE, related_name='sitter_profile')
+    bio                      = models.TextField(blank=True)
+    price_per_day            = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+    accepts_dogs             = models.BooleanField(default=True)
+    accepts_cats             = models.BooleanField(default=True)
+    accepts_other            = models.BooleanField(default=False)
+    rating                   = models.FloatField(default=0.0)
+    is_premium               = models.BooleanField(default=False)
+    latitude                 = models.FloatField(null=True, blank=True)
+    longitude                = models.FloatField(null=True, blank=True)
+    review_count             = models.PositiveIntegerField(default=0) 
+    completed_bookings_count = models.PositiveIntegerField(default=0)
+    city                     = models.CharField(max_length=100, blank=True)
 
     def __str__(self):
-        return f"Owner: {self.user.email}"
+        return f"Sitter: {self.user.email}"
 
 
-class PetSitterProfile(models.Model):
-    user          = models.OneToOneField(User, on_delete=models.CASCADE, related_name='sitter_profile')
-    cin           = models.CharField(max_length=20, unique=True)
-    cin_verified  = models.BooleanField(default=False)
-    bio           = models.TextField(blank=True)
-    price_per_day = models.DecimalField(max_digits=8, decimal_places=2, default=0)
-    accepts_dogs  = models.BooleanField(default=True)
-    accepts_cats  = models.BooleanField(default=True)
-    accepts_other = models.BooleanField(default=False)
-    rating        = models.FloatField(default=0.0)
-    is_premium    = models.BooleanField(default=False)
-    latitude      = models.FloatField(null=True, blank=True)
-    longitude     = models.FloatField(null=True, blank=True)
-    
-    def __str__(self)::
-        return f"Sitter: {self.user.email} | CIN verified: {self.cin_verified}"
+class SitterPhoto(models.Model):
+    """ 
+    SitterPhoto Model : model responsible on the photos uploaded by the
+    sitters ,it hold the ForeignKey of Sitters responsible on.
+    """
+    sitter    = models.ForeignKey(SitterProfile,on_delete=models.CASCADE)
+    photo     = models.ImageField(upload_to='sitters/',blank=False,null=False)
+    upload_at = models.DateTimeField(auth_now_add=True)

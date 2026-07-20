@@ -52,9 +52,9 @@ class ResetPasswordSerializer(serializers.Serializer):
     
     
 class ModifyPasswordSerializer(serializers.Serializer):
-    old_password=serializers.CharField(min_length=8)
-    new_password=serializers.CharField(min_length=8)         
-    
+    old_password = serializers.CharField(min_length=8)
+    new_password = serializers.CharField(min_length=8)         
+    email        = serializers.EmailField()     
     
     
 class PetOwnerSerializer(serializers.ModelSerializer):

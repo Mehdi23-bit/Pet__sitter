@@ -1,3 +1,5 @@
+"""
+obsolete file not used anymore.
 # users/signals.py
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -15,3 +17,5 @@ def create_profile(sender, instance, created, **kwargs):
     elif instance.role == 'sitter':
         cin = getattr(instance,'cin','')
         PetSitterProfile.objects.create(user=instance, cin=cin)
+
+"""        

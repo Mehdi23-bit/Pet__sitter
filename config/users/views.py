@@ -14,8 +14,8 @@ from django.db.models import F, Value, FloatField, Case, When
 from django.db.models.functions import ACos, Cos, Sin, Radians
 
 from .filters import SitterFilter
-from .models import Sitter
-from .serializers import SitterSerializer  # adjust import path as needed
+from .models import   PetSitterProfile as Sitter
+from .serializers import PetSitterSerializer as SitterSerializer  # adjust import path as needed
 
 
 class RegisterView(generics.CreateAPIView):
