@@ -1,9 +1,9 @@
 from django.db import models
 from django.conf import settings
 from pets.models import Pet
+from users.models import SitterProfile as Sitter
 
-
-class ContactRequest(models.Model):
+class Reservation(models.Model):
     class Status(models.TextChoices):
         PENDING   = 'pending',  'Pending'
         ACCEPTED  = 'accepted', 'Accepted'
@@ -25,16 +25,15 @@ class ContactRequest(models.Model):
 
 
 class Message(models.Model):
-    request    = models.ForeignKey(ContactRequest, on_delete=models.CASCADE, related_name='messages')
+    receiver   = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='messages')
     sender     = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     content    = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.sender.email}: {self.content[:50]}"
-# Create your models here
-#
-#
+
+
 class Review(models.Model):
     request    = models.OneToOneField(ContactRequest, on_delete=models.CASCADE, related_name='review')
     rating     = models.PositiveSmallIntegerField()

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from .models import PetOwnerProfile, PetSitterProfile
+from .models import  SitterProfile
 User = get_user_model()
 
 
@@ -9,16 +9,14 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'email', 'username', 'password', 'role', 'phone', 'city']
+        fields = ['email','password']
 
 
     def create(self, validated_data):
         password = validated_data.pop('password')
-        cin = validated_data.pop('cin',None)
         user = User(**validated_data)
         user.set_password(password)
         user.is_active = False
-        user._cin =  cin
         user.save()
         return user
 
@@ -26,8 +24,8 @@ class RegisterSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'email', 'username', 'phone', 'city', 'avatar', 'role']
-        read_only_fields = ['email', 'role']  # can't change email or role
+        fields = ['id', 'email']
+        read_only_fields = ['email']  # can't change email or role
         
         
         
@@ -37,7 +35,7 @@ class VerifyOTPSerializer(serializers.Serializer):
     
 class SendOTPSerializer(serializers.Serializer):
     email = serializers.EmailField()    
-    
+                        
     
     
 class ForgotPasswordSerializer(serializers.Serializer):
@@ -57,17 +55,11 @@ class ModifyPasswordSerializer(serializers.Serializer):
     email        = serializers.EmailField()     
     
     
-class PetOwnerSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = PetOwnerProfile
-        fields = ['user','address']
-        read_only_fields = ['user']
         
         
-class PetSitterSerializer(serializers.ModelSerializer):
-    cin = serializers.CharField(write_only=True)
+class SitterSerializer(serializers.ModelSerializer):
     class Meta:
-        model = PetSitterProfile
+        model = SitterProfile
         fields = '__all__'
         read_only_fields = ['user']
         

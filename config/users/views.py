@@ -156,18 +156,6 @@ class ModifyPasswordView(APIView):
     
     
     
-    
-    
-class MePetOwnerView(generics.RetrieveUpdateDestroyAPIView):
-    serializer_class = PetOwnerSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get_object(self):
-        return self.request.user.owner_profile    
-    
-    
-    
-    
 class SitterListView(generics.ListAPIView):
     serializer_class = UserSerializer
     permission_classes = [permissions.AllowAny]
@@ -194,19 +182,8 @@ class SitterListView(generics.ListAPIView):
 
         return qs.order_by(
             '-sitter_profile__is_premium',
-            '-sitter_profile__cin_verified',
             '-sitter_profile__rating',
         )
-
-
-
-
-
-
-
-
-
-
 
 class SitterSearchView(generics.ListAPIView):
     serializer_class = SitterSerializer
@@ -215,7 +192,6 @@ class SitterSearchView(generics.ListAPIView):
 
     def get_queryset(self):
         queryset = Sitter.objects.filter(is_available=True)
-
         lat = self.request.query_params.get('lat')
         lng = self.request.query_params.get('lng')
 
