@@ -5,10 +5,11 @@ from pets.models import Pet
 
 class ContactRequest(models.Model):
     class Status(models.TextChoices):
-        PENDING  = 'pending',  'Pending'
-        ACCEPTED = 'accepted', 'Accepted'
-        REJECTED = 'rejected', 'Rejected'
-        FINISHED = 'finished', 'Finished'
+        PENDING   = 'pending',  'Pending'
+        ACCEPTED  = 'accepted', 'Accepted'
+        REJECTED  = 'rejected', 'Rejected'
+        FINISHED  = 'finished', 'Finished'
+        CONFIRMED = 'confirmed', 'Confirmed'
 
     owner      = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='sent_requests')
     sitter     = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='received_requests')
@@ -20,7 +21,7 @@ class ContactRequest(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.owner.email} → {self.sitter.email} ({self.status})"
+        return f"{self.owner.email} ===> {self.sitter.email} ({self.status})"
 
 
 class Message(models.Model):

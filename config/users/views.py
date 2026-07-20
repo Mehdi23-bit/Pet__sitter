@@ -9,6 +9,15 @@ from .tools import verify_otp, delete_otp, check_otp, generate_reset_token, veri
 User = get_user_model()
 
 
+from django_filters.rest_framework import DjangoFilterBackend
+from django.db.models import F, Value, FloatField, Case, When
+from django.db.models.functions import ACos, Cos, Sin, Radians
+
+from .filters import SitterFilter
+from .models import Sitter
+from .serializers import SitterSerializer  # adjust import path as needed
+
+
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = RegisterSerializer
@@ -188,3 +197,72 @@ class SitterListView(generics.ListAPIView):
             '-sitter_profile__cin_verified',
             '-sitter_profile__rating',
         )
+
+
+
+
+
+
+
+
+
+
+
+class SitterSearchView(generics.ListAPIView):
+    serializer_class = SitterSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = SitterFilter
+
+    def get_queryset(self):
+        queryset = Sitter.objects.filter(is_available=True)
+
+        lat = self.request.query_params.get('lat')
+        lng = self.request.query_params.get('lng')
+
+        # --- Quality score: reviews + experience + premium boost + cold-start fairness ---
+        queryset = queryset.annotate(
+            quality_score=(
+                F('rating') * 3.0
+                + F('completed_bookings_count') * 0.05
+                + Case(
+                    When(is_premium=True, then=Value(5.0)),
+                    default=Value(0.0),
+                    output_field=FloatField(),
+                )
+                + Case(
+                    # give new sitters with few reviews a temporary visibility boost
+                    # so they aren't permanently buried under established sitters
+                    When(review_count__lt=3, then=Value(2.5)),
+                    default=Value(0.0),
+                    output_field=FloatField(),
+                )
+            )
+        )
+
+        if lat and lng:
+            lat, lng = float(lat), float(lng)
+            queryset = queryset.annotate(
+                distance_km=6371 * ACos(
+                    Cos(Radians(lat)) * Cos(Radians(F('latitude')))
+                    * Cos(Radians(F('longitude')) - Radians(lng))
+                    + Sin(Radians(lat)) * Sin(Radians(F('latitude')))
+                )
+            ).annotate(
+                distance_bucket=Case(
+                    When(distance_km__lte=5, then=Value(0)),
+                    When(distance_km__lte=15, then=Value(1)),
+                    When(distance_km__lte=30, then=Value(2)),
+                    default=Value(3),
+                    output_field=FloatField(),
+                )
+            ).order_by('distance_bucket', '-quality_score')
+        else:
+            # no location provided -- fall back to quality-only ranking
+            queryset = queryset.order_by('-quality_score')
+
+        return queryset
+
+
+
+
+

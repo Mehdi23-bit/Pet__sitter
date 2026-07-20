@@ -5,6 +5,7 @@ from django.conf import settings
 import secrets
 
 def generate_otp(email):
+    delete_otp(email)
     otp = str(random.randint(100000, 999999))
     cache.set(f"otp:{email}", otp, timeout=settings.OTP_EXPIRY_SECONDS)
     send_mail(
@@ -22,6 +23,7 @@ def verify_otp(email, otp):
         return None, "OTP expired."
     if cached_otp != otp:
         return None, "Invalid OTP."
+    
     return True, "OTP verified."
 
 

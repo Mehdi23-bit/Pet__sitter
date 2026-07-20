@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     "users",
     "pets",
     "contact",
+    "django_filters",
 ]
 
 MIDDLEWARE = [
