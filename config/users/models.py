@@ -25,7 +25,7 @@ class SitterProfile(models.Model):
    it has a relationship of OneToOne with User Model.
    
     """
-    user                     = models.OneToOneField(User, on_delete=models.CASCADE, related_name='sitter_profile')
+    user                     = models.OneToOneField(User, on_delete=models.CASCADE, related_name='sitter')
     bio                      = models.TextField(blank=True)
     price_per_day            = models.DecimalField(max_digits=8, decimal_places=2, default=0)
     accepts_dogs             = models.BooleanField(default=True)
@@ -50,4 +50,4 @@ class SitterPhoto(models.Model):
     """
     sitter    = models.ForeignKey(SitterProfile,on_delete=models.CASCADE)
     photo     = models.ImageField(upload_to='sitters/',blank=False,null=False)
-    upload_at = models.DateTimeField(auth_now_add=True)
+    upload_at = models.DateTimeField(auto_now_add=True)

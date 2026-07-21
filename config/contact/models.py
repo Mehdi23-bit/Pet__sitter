@@ -25,7 +25,7 @@ class Reservation(models.Model):
 
 
 class Message(models.Model):
-    receiver   = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='messages')
+    receiver   = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='messages',null=True)
     sender     = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     content    = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
@@ -35,7 +35,7 @@ class Message(models.Model):
 
 
 class Review(models.Model):
-    request    = models.OneToOneField(ContactRequest, on_delete=models.CASCADE, related_name='review')
+    reservation    = models.OneToOneField(Reservation, on_delete=models.CASCADE, related_name='review')
     rating     = models.PositiveSmallIntegerField()
     comment    = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)

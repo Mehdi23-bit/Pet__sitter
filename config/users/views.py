@@ -1,6 +1,6 @@
 from rest_framework import generics, permissions
 from django.contrib.auth import get_user_model
-from .serializers import RegisterSerializer, UserSerializer, VerifyOTPSerializer, SendOTPSerializer , ForgotPasswordSerializer , ResetPasswordSerializer, ModifyPasswordSerializer, PetOwnerSerializer
+from .serializers import RegisterSerializer, UserSerializer, VerifyOTPSerializer, SendOTPSerializer , ForgotPasswordSerializer , ResetPasswordSerializer, ModifyPasswordSerializer
 
 from  .tools import generate_otp
 from rest_framework.views import APIView
@@ -14,8 +14,8 @@ from django.db.models import F, Value, FloatField, Case, When
 from django.db.models.functions import ACos, Cos, Sin, Radians
 
 from .filters import SitterFilter
-from .models import   PetSitterProfile as Sitter
-from .serializers import PetSitterSerializer as SitterSerializer  # adjust import path as needed
+from .models import   SitterProfile as Sitter
+from .serializers import SitterSerializer   # adjust import path as needed
 
 
 class RegisterView(generics.CreateAPIView):
@@ -161,7 +161,7 @@ class SitterListView(generics.ListAPIView):
     permission_classes = [permissions.AllowAny]
 
     def get_queryset(self):
-        qs = User.objects.filter(role='sitter').select_related('sitter_profile')
+        qs = User.objects.filter(sitter__isnull=False)
 
         city = self.request.query_params.get('city')
         species = self.request.query_params.get('species')
@@ -171,18 +171,18 @@ class SitterListView(generics.ListAPIView):
             qs = qs.filter(city__iexact=city)
 
         if species == 'dog':
-            qs = qs.filter(sitter_profile__accepts_dogs=True)
+            qs = qs.filter(sitter__accepts_dogs=True)
         elif species == 'cat':
-            qs = qs.filter(sitter_profile__accepts_cats=True)
+            qs = qs.filter(sitter__accepts_cats=True)
         elif species == 'other':
-            qs = qs.filter(sitter_profile__accepts_other=True)
+            qs = qs.filter(sitter__accepts_other=True)
 
         if max_price:
             qs = qs.filter(sitter_profile__price_per_day__lte=max_price)
 
         return qs.order_by(
-            '-sitter_profile__is_premium',
-            '-sitter_profile__rating',
+            '-sitter__is_premium',
+            '-sitter__rating',
         )
 
 class SitterSearchView(generics.ListAPIView):
@@ -191,7 +191,7 @@ class SitterSearchView(generics.ListAPIView):
     filterset_class = SitterFilter
 
     def get_queryset(self):
-        queryset = Sitter.objects.filter(is_available=True)
+        queryset = Sitter.objects
         lat = self.request.query_params.get('lat')
         lng = self.request.query_params.get('lng')
 

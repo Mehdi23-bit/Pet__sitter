@@ -1,6 +1,6 @@
 import django_filters
 from django.db.models import Q
-from .models import PetSitterProfile as Sitter
+from .models import SitterProfile as Sitter
  
  
 class SitterFilter(django_filters.FilterSet):
@@ -69,9 +69,9 @@ class SitterFilter(django_filters.FilterSet):
  
         # ADJUST: assumes a related `bookings` model with start_date/end_date/status.
         overlapping = Q(
-            contactrequest__start_date__lte=end,
-            contactrequest__end_date__gte=start,
-            contactrequest__status__in=['acepted', 'confirmed'],
+            reservation__start_date__lte=end,
+            reservation__end_date__gte=start,
+            reservation__status__in=['acepted', 'confirmed'],
         )
         return queryset.exclude(overlapping).distinct()
  
