@@ -28,7 +28,7 @@ class ReservationHandlingView(APIView):
 
     VALID_TRANSITIONS = {
         "pending": {"accepted", "rejected"},
-        "accepted": {"finished"},
+        "accepted": {"finished","confirmed"},
     }
 
     def post(self, request):

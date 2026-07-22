@@ -15,7 +15,11 @@ from django.db.models.functions import ACos, Cos, Sin, Radians
 
 from .filters import SitterFilter
 from .models import   SitterProfile as Sitter
-from .serializers import SitterSerializer   # adjust import path as needed
+
+from rest_framework import viewsets, permissions
+from rest_framework.exceptions import ValidationError
+from .serializers import SitterProfileSerializer as SitterSerializer
+
 
 
 class RegisterView(generics.CreateAPIView):
@@ -241,4 +245,19 @@ class SitterSearchView(generics.ListAPIView):
 
 
 
+class IsOwnerOrReadOnly(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        return obj.user == request.user
 
+
+class SitterProfileView(viewsets.ModelViewSet):
+    queryset = Sitter.objects.select_related("user").all()
+    serializer_class = SitterSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
+
+    def perform_create(self, serializer):
+        if Sitter.objects.filter(user=self.request.user).exists():
+            raise ValidationError("You already have a sitter profile.")
+        serializer.save(user=self.request.user)
