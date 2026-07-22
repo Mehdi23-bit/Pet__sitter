@@ -1,6 +1,9 @@
 from django.urls import path
-from .views import (RegisterView, MeView, VerifyOTPView, SendOTPView, ForgotPasswordView ,
-                   ResetPasswordView ,ModifyPasswordView, SitterListView ,SitterSearchView, SitterProfileView)
+from .views import (RegisterView, MeView, VerifyOTPView, 
+                    SendOTPView, ForgotPasswordView ,
+                    ResetPasswordView ,ModifyPasswordView, 
+                    SitterListView ,SitterSearchView, SitterProfileView)
+
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView 
 
 sitter_list = SitterProfileView.as_view({
