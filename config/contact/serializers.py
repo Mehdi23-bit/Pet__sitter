@@ -12,7 +12,6 @@ class ReservationSerializer(serializers.ModelSerializer):
 
 
 class TreatingReservationSerializer(serializers.Serializer):
-    reservation_id = serializers.IntegerField()
     status = serializers.ChoiceField(choices=['rejected','accepted','confirmed','finished'])
 
 

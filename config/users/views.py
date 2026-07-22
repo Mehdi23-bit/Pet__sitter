@@ -1,13 +1,14 @@
 from rest_framework import generics, permissions
 from django.contrib.auth import get_user_model
-from .serializers import RegisterSerializer, UserSerializer, VerifyOTPSerializer, SendOTPSerializer , ForgotPasswordSerializer , ResetPasswordSerializer, ModifyPasswordSerializer
-
+from .serializers import (RegisterSerializer, UserSerializer, VerifyOTPSerializer, 
+                          SendOTPSerializer , ForgotPasswordSerializer , 
+                          ResetPasswordSerializer, ModifyPasswordSerializer)
 from  .tools import generate_otp
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .tools import verify_otp, delete_otp, check_otp, generate_reset_token, verify_reset_token, delete_reset_token
-User = get_user_model()
-
+from .tools import (verify_otp, delete_otp, 
+                    check_otp, generate_reset_token, 
+                    verify_reset_token, delete_reset_token)
 
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import F, Value, FloatField, Case, When
@@ -16,25 +17,44 @@ from django.db.models.functions import ACos, Cos, Sin, Radians
 from .filters import SitterFilter
 from .models import   SitterProfile as Sitter
 
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets, permissions, status
 from rest_framework.exceptions import ValidationError
 from .serializers import SitterProfileSerializer as SitterSerializer
+
+import logging
+
+
+#loading the user model    
+User = get_user_model()
+
+#initialization of logger
+logger = logging.getLogger(__name__)
+
 
 
 
 class RegisterView(generics.CreateAPIView):
+    """ 
+    Register is class basedView to registration of users.
+    """
     queryset = User.objects.all()
     serializer_class = RegisterSerializer
     permission_classes = [permissions.AllowAny]
     
     def perform_create(self, serializer):
         user = serializer.save()
-        generate_otp(user.email)  # send OTP right after registration
-
+        try:
+            generate_otp(user.email)  # send OTP right after registration
+        except Exception as e:
+            logger.error(f"error occured in send otp email to used : {user.email}")
+       
 
 
 
 class MeView(generics.RetrieveUpdateDestroyAPIView):
+    """   
+     View  for getting data about the logged user.
+    """
     serializer_class = UserSerializer
     permission_classes = [permissions.IsAuthenticated]
 
@@ -46,6 +66,9 @@ class MeView(generics.RetrieveUpdateDestroyAPIView):
 
 
 class SendOTPView(APIView):
+    """ 
+     View for sending Otp emails.
+    """
     permission_classes = [permissions.AllowAny]
     
     def post(self,request):
@@ -54,12 +77,16 @@ class SendOTPView(APIView):
         email=serializer.validated_data['email']
         
         if not User.objects.filter(email=email).exists():
-            return Response({'message':'if this email exists an OTP was sent'},status=200)
+            return Response({'message':'if this email exists an OTP was sent'},status=status.HTTP_200_OK)
         if check_otp(email):
-            return Response({'message': 'an otp is already sent, please wait'},status=429)
+            return Response({'message': 'an otp is already sent, please wait'},status=status.HTTP_429_TOO_MANY_REQUESTS)
         else:
-            generate_otp(email)
-            return Response({'message':'if this email exists an OTP was sent'},status=200)
+            try:
+                generate_otp(email)
+            except Exception as e:
+                logger.error(f"error occured when sending otp to user : {email}.")
+                return Response({'error': "otp is not sent ,try again later"},status=status.HTTP_503_SERVICE_UNAVAILABLE)
+            return Response({'message':'if this email exists an OTP was sent'},status=status.HTTP_200_OK)
 
              
  
@@ -67,6 +94,9 @@ class SendOTPView(APIView):
 
 
 class VerifyOTPView(APIView):
+    """
+    View to verify  the otp.
+    """
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
@@ -79,18 +109,18 @@ class VerifyOTPView(APIView):
         success, message = verify_otp(email, otp)
 
         if not success:
-            return Response({'error': message}, status=400)
+            return Response({'error': message}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             user = User.objects.get(email=email)
         except User.DoesNotExist:
-            return Response({'error': ' =User not found.'}, status=404)
+            return Response({'error': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
 
         user.is_active = True
         user.save()
         delete_otp(email)
 
-        return Response({'message': 'Account verified successfully.'}, status=200)    
+        return Response({'message': 'Account verified successfully.'}, status=status.HTTP_200_OK)    
     
     
     
@@ -104,9 +134,9 @@ class ForgotPasswordView(APIView):
         email = serializer.validated_data['email']
 
         if not User.objects.filter(email=email).exists():
-            return Response({'message': 'if this email exists Reset Link is sent.'}, status=200)
+            return Response({'message': 'if this email exists Reset Link is sent.'}, status=HTTP_200_OK)
         generate_reset_token(email)
-        return Response({'message': 'if this email exists Reset Link is sent.'}, status=200)
+        return Response({'message': 'if this email exists Reset Link is sent.'}, status=HTTP_200_OK)
     
     
 class ResetPasswordView(APIView):
@@ -123,7 +153,7 @@ class ResetPasswordView(APIView):
         success,message = verify_reset_token(email,token) 
         
         if not success : 
-            return Response({'error' : message},status=400)
+            return Response({'error' : message},status=HTTP_400_BAD_REQUEST)
         
         delete_reset_token(email)
         
@@ -131,36 +161,38 @@ class ResetPasswordView(APIView):
             user = User.objects.get(email=email)
             user.set_password(password)
             user.save()
-            return Response({'message': 'password modified successfuly'}, status=200) 
+            return Response({'message': 'password modified successfuly'}, status=HTTP_200_OK) 
         except User.DoesNotExist:
-            return Response({'error': ' =User not found.'}, status=404)
+            return Response({'error': ' =User not found.'}, status=HTTP_404_NOT_FOUND)
         
            
     
     
 class ModifyPasswordView(APIView):
+    """ 
+      View for modifying the password.
+    """
     permission_classes = [permissions.IsAuthenticated]
     
     def post(self,request):
         serializer = ModifyPasswordSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        email = serializer.validated_data['email']
+        user = request.user 
+        email = user.email 
         old_password = serializer.validated_data['old_password']
-        new_password = serializer.validated_data['new_password']
-        
-        try:
-            user = User.objects.get(email=email)
-            if not user.check_password(old_password):
-                return Response({'error' : 'old password is not correct '}, status=400)
-            user.set_password(new_password)
-            user.save()
-            return Response({'message': 'password modified successfuly'}, status=200)
-        except User.DoesNotExist:
-            return Response({'error': ' =User not found.'}, status=404)
+        new_password = serializer.validated_data['new_password'] 
+        if not user.check_password(old_password):
+                return Response({'error' : 'old password is not correct '}, status=HTTP_400_BAD_REQUEST)
+        user.set_password(new_password)
+        user.save()
+        return Response({'message': 'password modified successfuly'}, status=status.HTTP_200_OK)
     
     
     
 class SitterListView(generics.ListAPIView):
+    """
+      View list sitters.
+    """
     serializer_class = UserSerializer
     permission_classes = [permissions.AllowAny]
 
@@ -182,7 +214,7 @@ class SitterListView(generics.ListAPIView):
             qs = qs.filter(sitter__accepts_other=True)
 
         if max_price:
-            qs = qs.filter(sitter_profile__price_per_day__lte=max_price)
+            qs = qs.filter(sitter__price_per_day__lte=max_price)
 
         return qs.order_by(
             '-sitter__is_premium',
@@ -190,6 +222,9 @@ class SitterListView(generics.ListAPIView):
         )
 
 class SitterSearchView(generics.ListAPIView):
+    """
+      View for search sitters with filters.
+    """       
     serializer_class = SitterSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = SitterFilter
@@ -246,6 +281,9 @@ class SitterSearchView(generics.ListAPIView):
 
 
 class IsOwnerOrReadOnly(permissions.BasePermission):
+    """
+     Permission to check if the user is the owner of the sitter profile or just become readonly.
+    """
     def has_object_permission(self, request, view, obj):
         if request.method in permissions.SAFE_METHODS:
             return True

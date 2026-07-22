@@ -28,13 +28,21 @@ class ReservationHandlingView(APIView):
 
     VALID_TRANSITIONS = {
         "pending": {"accepted", "rejected"},
-        "accepted": {"finished","confirmed"},
+        "accepted": {"confirmed"},
+        "confirmed": {"finished"},
     }
 
-    def post(self, request):
+    def get(self,request,reservation_id):
+        try:
+            reservation = Reservation.objects.get(pk=reservation_id)
+        except Reservation.DoesNotExist:
+            return Response({"error": "Reservation not found or you don't have access to it."}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"status": reservation.status}, status=status.HTTP_200_OK)
+
+
+    def patch(self, request,reservation_id):
         serializer = TreatingReservationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        reservation_id = serializer.validated_data["reservation_id"]
         new_status = serializer.validated_data["status"]
         user = request.user
 

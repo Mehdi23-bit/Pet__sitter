@@ -13,10 +13,10 @@ urlpatterns = [
         'delete': 'destroy',
     }), name='contact_detail'),
 
-   path('change_status/', ReservationHandlingView.as_view(), name="change_status"),
-   path('message/<int:request_id>/' , MessageView.as_view({'get': 'list'
-                                                           ,'post': 'create'}), name="message"),
-   path('review/<int:request_id>/', ReviewView.as_view({'get': 'list','post': 'create'}))
+    path('status/<int:reservation_id>/', ReservationHandlingView.as_view(), name="status"),
+   path('message/<int:other_user_id>/' , MessageView.as_view({'get': 'list'
+                                                           ,'post': 'create'}), name="message_detail"),
+   path('review/<int:reservation_id>/', ReviewView.as_view({'get': 'list','post': 'create'}))
 
 
 ]
