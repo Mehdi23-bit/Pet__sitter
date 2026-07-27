@@ -27,7 +27,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'email']
-        read_only_fields = ['email']  # can't change email or role
+        read_only_fields = ['email','password','username','is_active']  # can't change email or role
         
         
         
@@ -54,6 +54,7 @@ class ResetPasswordSerializer(serializers.Serializer):
 class ModifyPasswordSerializer(serializers.Serializer):
     old_password = serializers.CharField(min_length=8)
     new_password = serializers.CharField(min_length=8)         
+    email        = serializers.EmailField()     
     
     
         
@@ -76,7 +77,7 @@ class SitterProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model  = SitterProfile
         fields = [
-            "id", "email", "bio", "price_per_day",
+            "id", "bio", "price_per_day",
             "accepts_dogs", "accepts_cats", "accepts_other",
             "rating", "is_premium", "latitude", "longitude",
             "review_count", "completed_bookings_count", "city",

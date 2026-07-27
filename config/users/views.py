@@ -20,6 +20,8 @@ from .models import   SitterProfile as Sitter
 from rest_framework import viewsets, permissions, status
 from rest_framework.exceptions import ValidationError
 from .serializers import SitterProfileSerializer as SitterSerializer
+from .throttle import IPRateThrottle
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView 
 
 import logging
 
@@ -30,6 +32,19 @@ User = get_user_model()
 #initialization of logger
 logger = logging.getLogger(__name__)
 
+class LoginView(TokenObtainPairView):
+    throttle_classes = [IPRateThrottle]
+    throttle_scope = 'login'
+    throttle_rate_limit = 5
+    throttle_window = 3600
+    permission_classes = [permissions.AllowAny]
+
+class RefreshView(TokenRefreshView):
+    throttle_classes = [IPRateThrottle]
+    throttle_scope = 'refresh'
+    throttle_rate_limit = 5
+    throttle_window = 3600
+    permission_classes = [permissions.AllowAny]
 
 
 
@@ -69,6 +84,11 @@ class SendOTPView(APIView):
     """ 
      View for sending Otp emails.
     """
+    
+    throttle_classes = [IPRateThrottle]
+    throttle_scope = 'otp_send'
+    throttle_rate_limit = 3
+    throttle_window = 3600
     permission_classes = [permissions.AllowAny]
     
     def post(self,request):
@@ -94,6 +114,12 @@ class SendOTPView(APIView):
 
 
 class VerifyOTPView(APIView):
+    
+    throttle_classes = [IPRateThrottle]
+    throttle_scope = 'verify_otp'
+    throttle_rate_limit = 3
+    throttle_window = 3600
+
     """
     View to verify  the otp.
     """
@@ -125,6 +151,10 @@ class VerifyOTPView(APIView):
     
     
 class ForgotPasswordView(APIView):
+    throttle_classes = [IPRateThrottle]
+    throttle_scope = 'forgot_pswd'
+    throttle_rate_limit = 3
+    throttle_window = 3600
     permission_classes = [permissions.AllowAny]
     
     def post(self,request):
@@ -134,12 +164,16 @@ class ForgotPasswordView(APIView):
         email = serializer.validated_data['email']
 
         if not User.objects.filter(email=email).exists():
-            return Response({'message': 'if this email exists Reset Link is sent.'}, status=HTTP_200_OK)
+            return Response({'message': 'if this email exists Reset Link is sent.'}, status=status.HTTP_200_OK)
         generate_reset_token(email)
-        return Response({'message': 'if this email exists Reset Link is sent.'}, status=HTTP_200_OK)
+        return Response({'message': 'if this email exists Reset Link is sent.'}, status=status.HTTP_200_OK)
     
     
 class ResetPasswordView(APIView):
+    throttle_classes = [IPRateThrottle]
+    throttle_scope = 'reset_pswd'
+    throttle_rate_limit = 3
+    throttle_window = 3600
     permission_classes = [permissions.AllowAny]
     
     def post(self,request):
@@ -153,7 +187,7 @@ class ResetPasswordView(APIView):
         success,message = verify_reset_token(email,token) 
         
         if not success : 
-            return Response({'error' : message},status=HTTP_400_BAD_REQUEST)
+            return Response({'error' : message},status=status.HTTP_400_BAD_REQUEST)
         
         delete_reset_token(email)
         
@@ -161,9 +195,9 @@ class ResetPasswordView(APIView):
             user = User.objects.get(email=email)
             user.set_password(password)
             user.save()
-            return Response({'message': 'password modified successfuly'}, status=HTTP_200_OK) 
+            return Response({'message': 'password modified successfuly'}, status=status.HTTP_200_OK) 
         except User.DoesNotExist:
-            return Response({'error': ' =User not found.'}, status=HTTP_404_NOT_FOUND)
+            return Response({'error': ' User not found.'}, status=status.HTTP_404_NOT_FOUND)
         
            
     
@@ -182,7 +216,7 @@ class ModifyPasswordView(APIView):
         old_password = serializer.validated_data['old_password']
         new_password = serializer.validated_data['new_password'] 
         if not user.check_password(old_password):
-                return Response({'error' : 'old password is not correct '}, status=HTTP_400_BAD_REQUEST)
+                return Response({'error' : 'old password is not correct '}, status=status.HTTP_400_BAD_REQUEST)
         user.set_password(new_password)
         user.save()
         return Response({'message': 'password modified successfuly'}, status=status.HTTP_200_OK)

@@ -119,6 +119,16 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ),
      'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    
+    'DEFAULT_THROTTLE_RATES': {
+    'otp_send': '3/hour',
+    'register': '5/hour',
+    'login': '5/minutes',
+    'refresh': '5/minutes',
+    'verify_otp': '5/minutes',
+    'forgot_pswd' : '5/minutes',
+    'reset_pswd' : '5/minutes'
+},
 }
 
 SPECTACULAR_SETTINGS = {
@@ -162,7 +172,8 @@ STATIC_URL = "static/"
 
 CACHES = {
     'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+        'LOCATION': 'redis://127.0.0.1:6379/0',
     }
 }
 
@@ -180,11 +191,19 @@ EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 #otp expiracy 
 
 OTP_EXPIRY_SECONDS = 300
-
+VERIFY_ATTEMPTS_LIMIT = 5
 #reset token expiracy 
 
 TOKEN_EXPIRY_SECONDS = 1800
 
 # frontend url 
 
-FRONTEND_URL = "http://example.com"
+FRONTEND_URL = "http://example.com" 
+
+#celery settings
+CELERY_BROKER_URL = 'redis://127.0.0.1:6379/1'      # separate DB index from your cache
+CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379/2'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'Africa/Casablanca'   # adjust to your actual setting
+
