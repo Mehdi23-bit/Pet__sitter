@@ -153,7 +153,7 @@ class VerifyOTPView(APIView):
 class ForgotPasswordView(APIView):
     throttle_classes = [IPRateThrottle]
     throttle_scope = 'forgot_pswd'
-    throttle_rate_limit = 3
+    throttle_rate_limit = 1000
     throttle_window = 3600
     permission_classes = [permissions.AllowAny]
     

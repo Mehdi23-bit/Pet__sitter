@@ -121,13 +121,13 @@ REST_FRAMEWORK = {
      'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     
     'DEFAULT_THROTTLE_RATES': {
-    'otp_send': '3/hour',
-    'register': '5/hour',
-    'login': '5/minutes',
-    'refresh': '5/minutes',
-    'verify_otp': '5/minutes',
-    'forgot_pswd' : '5/minutes',
-    'reset_pswd' : '5/minutes'
+    'otp_send': '3000/hour',
+    'register': '5000/hour',
+    'login': '100/minutes',
+    'refresh': '100/minutes',
+    'verify_otp': '100/minutes',
+    'forgot_pswd' : '100/minutes',
+    'reset_pswd' : '100/minutes'
 },
 }
 
@@ -198,7 +198,7 @@ TOKEN_EXPIRY_SECONDS = 1800
 
 # frontend url 
 
-FRONTEND_URL = "http://example.com" 
+FRONTEND_URL = "http://localhost:3000" 
 
 #celery settings
 CELERY_BROKER_URL = 'redis://127.0.0.1:6379/1'      # separate DB index from your cache

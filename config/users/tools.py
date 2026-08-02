@@ -47,9 +47,9 @@ def check_otp(email):
 def generate_reset_token(email):
     token = secrets.token_urlsafe(128)
     cache.set(f"reset_token:{email}", token, timeout=settings.TOKEN_EXPIRY_SECONDS )
-    send_mail(
+    send_email.delay(
         subject="Your Reset Link",
-        message=f"Your Reset Link is: {settings.FRONTEND_URL}/reset-password?token={token}\nExpires in 5 minutes.",
+        message=f"Your Reset Link is: {settings.FRONTEND_URL}/reset-password?email={email}&token={token}\nExpires in 5 minutes.",
         from_email=settings.EMAIL_HOST_USER,
         recipient_list=[email],
     )
