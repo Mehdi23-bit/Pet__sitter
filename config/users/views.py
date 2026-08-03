@@ -87,7 +87,7 @@ class SendOTPView(APIView):
     
     throttle_classes = [IPRateThrottle]
     throttle_scope = 'otp_send'
-    throttle_rate_limit = 3
+    throttle_rate_limit = 3000
     throttle_window = 3600
     permission_classes = [permissions.AllowAny]
     
@@ -117,7 +117,7 @@ class VerifyOTPView(APIView):
     
     throttle_classes = [IPRateThrottle]
     throttle_scope = 'verify_otp'
-    throttle_rate_limit = 3
+    throttle_rate_limit = 300
     throttle_window = 3600
 
     """
@@ -172,7 +172,7 @@ class ForgotPasswordView(APIView):
 class ResetPasswordView(APIView):
     throttle_classes = [IPRateThrottle]
     throttle_scope = 'reset_pswd'
-    throttle_rate_limit = 3
+    throttle_rate_limit = 300
     throttle_window = 3600
     permission_classes = [permissions.AllowAny]
     

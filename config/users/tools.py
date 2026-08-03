@@ -24,7 +24,7 @@ def verify_otp(email, otp):
     cached_otp = cache.get(f"otp:{email}")
     if cached_otp is None:
         return None, "OTP expired."
-    attempts = cache.incr(f"attempts{email}")    
+    attempts = cache.incr(f"attempts:{email}")    
 
     if attempts > settings.VERIFY_ATTEMPTS_LIMIT:
         return None , "you've hit the limit of attempts of verifying , try again later"
