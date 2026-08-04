@@ -14,7 +14,7 @@ class User(AbstractUser):
         ('sitter', 'Sitter'),
     ]  
     email  = models.EmailField(unique=True)
-    avatar = models.ImageField(upload_to='avatars/', blank=True,null=True,defaut='avatars/default.png')
+    avatar = models.ImageField(upload_to='avatars/', blank=True,null=True,default='avatars/default.png')
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='owner')
 
     USERNAME_FIELD = 'email'
