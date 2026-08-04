@@ -8,9 +8,15 @@ class User(AbstractUser):
         inherite from the Model AbstractUser ,
         we used email as username.
         
-    """    
+    """  
+    ROLE_CHOICES = [
+        ('owner', 'Owner'),
+        ('sitter', 'Sitter'),
+    ]  
     email  = models.EmailField(unique=True)
-    avatar = models.ImageField(upload_to='avatars/', blank=True,null=True)
+    avatar = models.ImageField(upload_to='avatars/', blank=True,null=True,defaut='avatars/default.png')
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='owner')
+
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username','role']
 

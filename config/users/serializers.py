@@ -26,8 +26,8 @@ class RegisterSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'email']
-        read_only_fields = ['email','password','username','is_active']  # can't change email or role
+        fields = ['id', 'email','username','role','avatar']
+        read_only_fields = ['email','password','username','is_active','role']  # can't change email or role
         
         
         
